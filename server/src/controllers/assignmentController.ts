@@ -33,13 +33,17 @@ export const createAssignment: RequestHandler = async (req, res) => {
 };
 
 export const getAssignments: RequestHandler = async (req, res) => {
-  try {
-    const assignments = await Assignment.find();
-    res.status(200).json(assignments);
-  } catch (error) {
-    res.status(500).json({ message: 'Error retrieving assignments', error });
-  }
-};
+    try {
+      const query: any = {};
+      if (req.query.partnerId) {
+        query.partnerId = req.query.partnerId;
+      }
+      const assignments = await Assignment.find(query);
+      res.status(200).json(assignments);
+    } catch (error) {
+      res.status(500).json({ message: 'Error retrieving assignments', error });
+    }
+  };
 
 export const updateAssignment: RequestHandler = async (req, res) => {
   try {

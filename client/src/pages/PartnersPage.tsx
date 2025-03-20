@@ -1,68 +1,61 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DeliveryPartner } from '../types';
 
 const PartnersPage: React.FC = () => {
+  const navigate = useNavigate();
   const [partners, setPartners] = useState<DeliveryPartner[]>([]);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     fetchPartners();
-  }, [refresh]);
+  }, []);
 
   const fetchPartners = async () => {
-    const response = await fetch('/api/partners');
-    const data = await response.json();
-    setPartners(data);
+    try {
+      const response = await fetch('/api/partners');
+      const data = await response.json();
+      setPartners(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await fetch('/api/partners', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, status: 'active' }),
-    });
-    setName('');
-    setEmail('');
-    setRefresh(!refresh);
+  const handleCreateClick = () => {
+    navigate('/partners/new');
   };
 
-  const handleDelete = async (id?: string) => {
-    if (!id) return;
-    await fetch(`/api/partners/${id}`, { method: 'DELETE' });
-    setRefresh(!refresh);
+  const calcAvgRating = (partner: DeliveryPartner) => {
+    const { completedOrders, cancelledOrders } = partner.metrics;
+    const totalAssigned = completedOrders + cancelledOrders;
+    if (totalAssigned === 0) return 0;
+    return (completedOrders / totalAssigned).toFixed(2);
   };
 
   return (
-    <>
+    <div>
       <h1>Partners</h1>
-      <form onSubmit={handleSubmit} style={{ marginBottom: '1rem' }}>
-        <input
-          placeholder="Partner Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <input
-          placeholder="Partner Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <button type="submit">Add Partner</button>
-      </form>
-
-      <ul>
+      <button onClick={handleCreateClick}>Create New Partner</button>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
         {partners.map((partner) => (
-          <li key={partner._id}>
-            <strong>{partner.name}</strong> – {partner.email} ({partner.status})
-            <button onClick={() => handleDelete(partner._id)}>Delete</button>
-          </li>
+          <div
+            key={partner._id}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              padding: '1rem',
+              width: '250px'
+            }}
+          >
+            <h3>{partner.name}</h3>
+            <p>Status: {partner.status}</p>
+            <p>Current Load: {partner.currentLoad}</p>
+            <p>Avg Rating: {calcAvgRating(partner)}</p>
+            <button onClick={() => navigate(`/partners/${partner._id}/edit`)}>Update Profile</button>
+            <button onClick={() => navigate(`/partners/${partner._id}/assignments`)}>View Assignments</button>
+          </div>
         ))}
-      </ul>
-    </>
+      </div>
+    </div>
   );
 };
 
