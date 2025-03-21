@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import { DeliveryPartner } from '../models/partner';
+import { autoAssignOrdersService } from './assignmentController';
 
 export const registerPartner: RequestHandler = async (req, res) => {
     try {
@@ -39,6 +40,7 @@ export const updatePartner: RequestHandler = async (req, res) => {
             return;
         }
         res.status(200).json(partner);
+        autoAssignOrdersService();
     } catch (error) {
         if (error instanceof Error) {
             res.status(400).json({ message: error.message });
