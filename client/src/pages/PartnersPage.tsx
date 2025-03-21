@@ -5,6 +5,7 @@ import { DeliveryPartner } from '../types';
 const PartnersPage: React.FC = () => {
   const navigate = useNavigate();
   const [partners, setPartners] = useState<DeliveryPartner[]>([]);
+  const [totalActive, setTotalActive] = useState(0);
 
   useEffect(() => {
     fetchPartners();
@@ -15,6 +16,7 @@ const PartnersPage: React.FC = () => {
       const response = await fetch('/api/partners');
       const data = await response.json();
       setPartners(data);
+      setTotalActive(data.filter((p: DeliveryPartner) => p.status === 'active').length);
     } catch (error) {
       console.error(error);
     }
@@ -34,6 +36,7 @@ const PartnersPage: React.FC = () => {
   return (
     <div>
       <h1>Partners</h1>
+      <p>Total Active Partners: {totalActive}</p>
       <button onClick={handleCreateClick}>Create New Partner</button>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
         {partners.map((partner) => (
@@ -51,7 +54,7 @@ const PartnersPage: React.FC = () => {
             <p>Current Load: {partner.currentLoad}</p>
             <p>Avg Rating: {calcAvgRating(partner)}</p>
             <button onClick={() => navigate(`/partners/${partner._id}/edit`)}>Update Profile</button>
-            <button onClick={() => navigate(`/partners/${partner._id}/assignments`)}>View Assignments</button>
+            <button onClick={() => navigate(`/partners/${partner._id}/orders`)}>View Orders</button>
           </div>
         ))}
       </div>
