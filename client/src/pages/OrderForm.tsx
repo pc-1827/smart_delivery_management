@@ -43,6 +43,7 @@ const OrderForm: React.FC = () => {
     e.preventDefault();
     const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
     const orderPayload = {
+      orderNumber,
       customer: {
         name: customerName,
         phone: customerPhone,
@@ -76,6 +77,15 @@ const OrderForm: React.FC = () => {
         onSubmit={createNewOrder}
         style={{ display: 'flex', flexDirection: 'column', maxWidth: 400, gap: 8 }}
       >
+        <label>Order Number</label>
+        <input
+          type="text"
+          placeholder="Order Number"
+          value={orderNumber}
+          onChange={(e) => setOrderNumber(e.target.value)}
+          required
+        />
+        
         <label>Customer Name</label>
         <input
           type="text"

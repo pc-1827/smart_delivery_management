@@ -3,11 +3,14 @@ import Order from '../models/order';
 import Assignment from '../models/assignment';
 import { DeliveryPartner } from '../models/partner';
 import moment from 'moment';
-import { autoAssignOrdersService } from './assignmentController';
 
 export const getAllOrders: RequestHandler = async (req, res) => {
   try {
-    const orders = await Order.find();
+    const query: any = {};
+    if (req.query.assignedTo) {
+      query.assignedTo = req.query.assignedTo; // enforce partner filter
+    }
+    const orders = await Order.find(query).sort({ createdAt: -1 });
     res.status(200).json(orders);
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving orders', error });
@@ -31,8 +34,8 @@ export const createOrder: RequestHandler = async (req, res) => {
   const newOrder = new Order(req.body);
   try {
     const savedOrder = await newOrder.save();
+    autoAssignPendingOrders();
     res.status(201).json(savedOrder);
-    autoAssignOrdersService();
   } catch (error) {
     res.status(400).json({ message: 'Error creating order', error });
   }
@@ -101,10 +104,44 @@ export const completeOrder: RequestHandler = async (req, res) => {
     }
 
     // Re-run auto-assign logic (no Express params needed)
-    await autoAssignOrdersService();
+    await autoAssignPendingOrders();
 
     res.status(200).json({ message: 'Order completed successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error completing order', error });
   }
 };
+
+export async function autoAssignPendingOrders(): Promise<number> {
+  const pendingOrders = await Order.find({ status: 'pending' });
+  let assignedCount = 0;
+
+  for (const order of pendingOrders) {
+    if (order.status !== 'pending') continue;
+
+    // Find suitable partner
+    const suitablePartner = await DeliveryPartner.findOne({
+      currentLoad: { $lt: 3 },
+      areas: order.area,
+      status: 'active'
+    });
+
+    if (!suitablePartner) continue;
+    // Check shift
+    const now = moment();
+    const shiftStart = moment(suitablePartner.shift.start, 'HH:mm');
+    const shiftEnd = moment(suitablePartner.shift.end, 'HH:mm');
+    if (!now.isBetween(shiftStart, shiftEnd)) continue;
+
+    // Assign the order but do NOT create an Assignment doc yet.
+    order.status = 'assigned';
+    order.assignedTo = String(suitablePartner._id);
+    await order.save();
+
+    suitablePartner.currentLoad++;
+    await suitablePartner.save();
+
+    assignedCount++;
+  }
+  return assignedCount;
+}

@@ -4,15 +4,15 @@ import {
     getAssignments, 
     updateAssignment, 
     deleteAssignment,
-    autoAssignOrders
+    executeAssignment,
 } from '../controllers/assignmentController';
 
 const router = Router();
 
 router.post('/', createAssignment);
+router.post('/execute', executeAssignment);
 router.get('/', getAssignments);
 router.put('/:id', updateAssignment);
 router.delete('/:id', deleteAssignment);
-router.post('/auto-assign', autoAssignOrders);
 
 export default router;

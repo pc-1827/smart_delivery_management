@@ -1,41 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { Assignment, AssignmentMetrics } from '../types';
+import { Assignment, AssignmentMetrics, Order } from '../types';
 
 const AssignmentsPage: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [metrics, setMetrics] = useState<AssignmentMetrics | null>(null);
-  const [partnersStatus, setPartnersStatus] = useState<{ available: number; busy: number; offline: number }>({
+  const [metrics, setMetrics] = useState<AssignmentMetrics | null>(null);  const [partnersStatus, setPartnersStatus] = useState<{ available: number; busy: number; offline: number }>({
     available: 0,
     busy: 0,
     offline: 0
   });
+  const [incompleteOrders, setIncompleteOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    fetchAssignments();
-    fetchMetrics();
     fetchPartnerAvailability();
+    fetchIncompleteOrders();
+    fetchAssignmentMetrics();
   }, []);
 
-  const fetchAssignments = async () => {
-    // Suppose GET /api/assignments
-    const response = await fetch('/api/assignments');
-    const data = await response.json();
-    setAssignments(data);
+  const fetchAssignmentMetrics = async () => {
+    try {
+      const response = await fetch('/api/assignments/metrics');
+      const data = await response.json();
+      setMetrics(data);
+    } catch {
+      // fallback
+    }
   };
-
-  const fetchMetrics = async () => {
-    // Suppose GET /api/assignments/metrics
-    const response = await fetch('/api/assignments/metrics');
-    const data = await response.json();
-    setMetrics(data);
-  };
-
+  
+  // Replace random partner availability
   const fetchPartnerAvailability = async () => {
-    // Example custom route or calculation
-    // Hardcoding a sample set for demonstration
-    setPartnersStatus({ available: 3, busy: 2, offline: 1 });
+    try {
+      const response = await fetch('/api/partners');
+      const allPartners = await response.json(); // real data
+      const available = allPartners.filter((p: any) => p.currentLoad < 3 && p.status === 'active').length;
+      const busy = allPartners.filter((p: any) => p.currentLoad >= 3 && p.status === 'active').length;
+      const offline = allPartners.filter((p: any) => p.status === 'inactive').length;
+      setPartnersStatus({ available, busy, offline });
+    } catch {
+      // fallback
+    }
   };
-
+  
+  // Show only orders not delivered
+  const fetchIncompleteOrders = async () => {
+    const response = await fetch('/api/orders');
+    const data = await response.json();
+    const filtered = data.filter((o: Order) => o.status !== 'delivered');
+    setIncompleteOrders(filtered);
+  };
+  
+  // No need for random sample assignments; we can remove fetchAssignments entirely, or just skip it.
+  
   return (
     <>
       <h1>Assignment Dashboard</h1>
@@ -50,24 +64,15 @@ const AssignmentsPage: React.FC = () => {
         {metrics && (
           <>
             <p>Total Assigned: {metrics.totalAssigned}</p>
-            <p>Success Rate: {metrics.successRate}%</p>
-            <p>Average Time: {metrics.averageTime} mins</p>
-            <p>Failure Reasons:</p>
-            <ul>
-              {metrics.failureReasons.map((fr, index) => (
-                <li key={index}>
-                  {fr.reason} – {fr.count}
-                </li>
-              ))}
-            </ul>
+            <p>Success Rate: {metrics.successRate.toFixed(1)}%</p>
           </>
         )}
       </div>
       <h2>Active Assignments</h2>
       <ul>
-        {assignments.map((a, i) => (
+        {incompleteOrders.map((o, i) => (
           <li key={i}>
-            Order: {a.orderId}, Partner: {a.partnerId}, Status: {a.status}, Time: {a.timestamp}
+            Order #{o.orderNumber}, Status: {o.status}, AssignedTo: {o.assignedTo || 'Unassigned'}
           </li>
         ))}
       </ul>
