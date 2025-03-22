@@ -58,6 +58,17 @@ const PartnerForm: React.FC = () => {
     setPartnerData((prev) => ({ ...prev, areas: selectedOptions }));
   };
 
+  const handleAreaCheckbox = (area: string) => {
+    setPartnerData((prev) => {
+      const alreadySelected = prev.areas.includes(area);
+      if (alreadySelected) {
+        return { ...prev, areas: prev.areas.filter((a) => a !== area) };
+      } else {
+        return { ...prev, areas: [...prev.areas, area] };
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const method = isEditing ? 'PUT' : 'POST';
@@ -73,59 +84,70 @@ const PartnerForm: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>{isEditing ? 'Update Partner' : 'Create New Partner'}</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', maxWidth: 400, gap: 8 }}>
-        <input
-          name="name"
-          placeholder="Name"
-          value={partnerData.name}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="email"
-          placeholder="Email"
-          type="email"
-          value={partnerData.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="phone"
-          placeholder="Phone"
-          value={partnerData.phone}
-          onChange={handleChange}
-          required
-        />
-        <select name="status" value={partnerData.status} onChange={handleChange}>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-        <label>Areas:</label>
-        <select multiple value={partnerData.areas} onChange={handleAreasChange} style={{ height: '7em' }}>
-          {ALL_AREAS.map((area) => (
-            <option key={area} value={area}>
-              {area}
-            </option>
-          ))}
-        </select>
-        <label>Shift Start:</label>
-        <input
-          type="time"
-          name="start"
-          value={partnerData.shift.start}
-          onChange={handleShiftChange}
-        />
-        <label>Shift End:</label>
-        <input
-          type="time"
-          name="end"
-          value={partnerData.shift.end}
-          onChange={handleShiftChange}
-        />
-        <button type="submit">{isEditing ? 'Save Changes' : 'Create Partner'}</button>
-      </form>
+      <div className="card" style={{ marginTop: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <input
+            name="name"
+            placeholder="Name"
+            value={partnerData.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="email"
+            placeholder="Email"
+            type="email"
+            value={partnerData.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="phone"
+            placeholder="Phone"
+            value={partnerData.phone}
+            onChange={handleChange}
+            required
+          />
+          <label>Status:</label>
+          <select name="status" value={partnerData.status} onChange={handleChange}>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+  
+          <label>Areas:</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {ALL_AREAS.map((area) => (
+              <label key={area} style={{ display: 'flex', alignItems: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={partnerData.areas.includes(area)}
+                  onChange={() => handleAreaCheckbox(area)}
+                />
+                <span style={{ marginLeft: '0.25rem' }}>{area}</span>
+              </label>
+            ))}
+          </div>
+  
+          <label>Shift Start:</label>
+          <input
+            type="time"
+            name="start"
+            value={partnerData.shift.start}
+            onChange={handleShiftChange}
+          />
+          <label>Shift End:</label>
+          <input
+            type="time"
+            name="end"
+            value={partnerData.shift.end}
+            onChange={handleShiftChange}
+          />
+  
+          <button type="submit">{isEditing ? 'Save Changes' : 'Create Partner'}</button>
+        </form>
+      </div>
     </div>
   );
 };

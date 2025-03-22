@@ -74,42 +74,41 @@ const PartnerOrdersPage: React.FC = () => {
   });
 
   return (
-    <div>
+    <div className="container">
       <h1>Orders for Partner {id}</h1>
-      {/* View mode buttons */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <button onClick={() => setViewMode('current')}>View Current Orders</button>
         <button onClick={() => setViewMode('completed')}>View Completed Orders</button>
       </div>
-
-      {viewMode === 'none' ? (
-        <p>Select an option above.</p>
-      ) : (
-        <ul>
-          {filteredOrders.map((o) => (
-            <li key={o._id} style={{ margin: '1rem 0' }}>
-              <p><strong>Order #{o.orderNumber}</strong></p>
-              <p>Status: {o.status} | Scheduled: {o.scheduledFor}</p>
-              <p>Items: {o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</p>
-              <p>Area: {o.area} | Total: ${o.totalAmount}</p>
-
-              {/* Buttons for current orders only */}
-              {viewMode === 'current' && (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {o.status === 'assigned' && (
-                    <button onClick={() => handleMarkPicked(o._id)}>Mark Picked</button>
-                  )}
-                  {o.status === 'picked' && (
-                    <button onClick={() => handleMarkDelivered(o._id)}>Mark Delivered</button>
-                  )}
-                  {/* Mark Failed & Reschedule exist in both states */}
-                  <button onClick={() => handleMarkFailed(o._id)}>Mark Failed</button>
-                  <button onClick={() => handleReschedule(o._id)}>Reschedule</button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+  
+      {viewMode === 'none' && <p>Select an option above.</p>}
+  
+      {(viewMode === 'current' || viewMode === 'completed') && (
+        <div className="card">
+          <h2>{viewMode === 'current' ? 'Current Orders' : 'Completed Orders'}</h2>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {filteredOrders.map((o) => (
+              <li key={o._id} style={{ margin: '1rem 0' }}>
+                <p><strong>Order #{o.orderNumber}</strong></p>
+                <p>Status: {o.status} | Scheduled: {o.scheduledFor}</p>
+                <p>Items: {o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</p>
+                <p>Area: {o.area} | Total: ${o.totalAmount}</p>
+                {viewMode === 'current' && (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {o.status === 'assigned' && (
+                      <button onClick={() => handleMarkPicked(o._id)}>Mark Picked</button>
+                    )}
+                    {o.status === 'picked' && (
+                      <button onClick={() => handleMarkDelivered(o._id)}>Mark Delivered</button>
+                    )}
+                    <button onClick={() => handleMarkFailed(o._id)}>Mark Failed</button>
+                    <button onClick={() => handleReschedule(o._id)}>Reschedule</button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

@@ -1,0 +1,102 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Global font */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f3f3;
+  }
+  
+  /* Container styling for pages */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  
+  /* Basic card style */
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    padding: 1rem;
+  }
+  
+  /* Buttons */
+  button {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background: #0056b3;
+  }
+  
+  /* Simple nav */
+  nav {
+    background: #333;
+  }
+  nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+  }
+  nav a:hover {
+    background: #444;
+  }
+  
+  /* Responsive layout */
+  @media (max-width: 768px) {
+    .container {
+      padding: 0.5rem;
+    }
+    .card {
+      margin-bottom: 1rem;
+    }
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    nav a {
+      padding: 0.5rem;
+    }
+  }
+
+  .navbar {
+    background: #333;
+    padding: 0.5rem 1rem;
+  }
+  
+  .navbar-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .navbar-links a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+  }
+  
+  .navbar-links a:hover {
+    background: #444;
+  }
+  
+  /* For small screens, stack links vertically */
+  @media (max-width: 768px) {
+    .navbar-links {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }

@@ -39,61 +39,45 @@ const OrdersPage: React.FC = () => {
   });
 
   return (
-    <>
+    <div className="container">
       <h1>Orders</h1>
-      
-      {/* Button to create new order */}
-      <button onClick={handleCreateClick}>Create New Order</button>
-
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '1rem', margin: '1rem 0' }}>
-        <select
-          value={areaFilter}
-          onChange={(e) => setAreaFilter(e.target.value)}
-        >
-          <option value="">All Areas</option>
-          <option value="Area1">Area1</option>
-          <option value="Area2">Area2</option>
-          <option value="Area3">Area3</option>
-          <option value="Area4">Area4</option>
-          <option value="Area5">Area5</option>
-          <option value="Area6">Area6</option>
-          <option value="Area7">Area7</option>
-          <option value="Area8">Area8</option>
-          <option value="Area9">Area9</option>
-          <option value="Area10">Area10</option>
-        </select>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="assigned">Assigned</option>
-          <option value="picked">Picked</option>
-          <option value="delivered">Delivered</option>
-        </select>
-        <input
-        type="date"
-        value={dateFilter}
-        onChange={(e) => setDateFilter(e.target.value)}
-      />
+      <button onClick={handleCreateClick} style={{ margin: '1rem 0' }}>Create New Order</button>
+  
+      <div className="card">
+        <h2>Filters</h2>
+        <div style={{ display: 'flex', gap: '1rem', margin: '1rem 0' }}>
+          {/* Area Filter */}
+          <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)}>
+            <option value="">All Areas</option>
+            {/* ...options... */}
+          </select>
+          {/* Status Filter */}
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">All Status</option>
+            {/* ...options... */}
+          </select>
+          {/* Date Filter */}
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+          />
+        </div>
       </div>
-
-      {/* List of orders */}
-      <ul>
-        {filteredOrders.map((order) => (
-          <li key={order._id}>
-            <strong>{order.orderNumber}</strong> – Area: {order.area}, 
-            Status: {order.status},
-            Scheduled: {order.scheduledFor},
-            Total: ${order.totalAmount} 
-            (Created: {new Date(order.createdAt).toLocaleString()})
-          </li>
-        ))}
-      </ul>
-    </>
+  
+      <div className="card" style={{ marginTop: '1rem' }}>
+        <h2>Order List</h2>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {filteredOrders.map((order) => (
+            <li key={order._id} style={{ margin: '1rem 0' }}>
+              <strong>{order.orderNumber}</strong> – Area: {order.area}, 
+              Status: {order.status}, Scheduled: {order.scheduledFor}, 
+              Total: ${order.totalAmount} (Created: {new Date(order.createdAt).toLocaleString()})
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 };
 

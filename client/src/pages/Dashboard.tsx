@@ -1,50 +1,82 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { Assignment } from "../types";
 
 const Dashboard: React.FC = () => {
-  const [metrics, setMetrics] = useState<{ [key: string]: number }>({});
-  const [recentAssignments, setRecentAssignments] = useState<any[]>([]);
+  const [partnerStats, setPartnerStats] = useState({
+    available: 0,
+    busy: 0,
+    offline: 0,
+  });
+  const [metrics, setMetrics] = useState<{
+    totalAssignments: number;
+    successRate: number;
+  } | null>(null);
+  const [recentAssignments, setRecentAssignments] = useState<Assignment[]>([]);
 
   useEffect(() => {
-    fetchMetrics();
+    fetchPartnerAvailability();
+    fetchAssignmentMetrics();
     fetchRecentAssignments();
   }, []);
 
-  const fetchMetrics = async () => {
-    // Example: you might have an endpoint like /api/metrics
-    // For demonstration, set placeholders:
-    setMetrics({ totalDelivered: 20, totalPending: 5, totalPartners: 10 });
+  const fetchPartnerAvailability = async () => {
+    const response = await fetch("/api/partners");
+    const allPartners = await response.json();
+    const available = allPartners.filter(
+      (p: any) => p.currentLoad < 3 && p.status === "active"
+    ).length;
+    const busy = allPartners.filter(
+      (p: any) => p.currentLoad >= 3 && p.status === "active"
+    ).length;
+    const offline = allPartners.filter(
+      (p: any) => p.status === "inactive"
+    ).length;
+    setPartnerStats({ available, busy, offline });
+  };
+
+  const fetchAssignmentMetrics = async () => {
+    const response = await fetch("/api/assignments/metrics");
+    const data = await response.json();
+    setMetrics(data);
   };
 
   const fetchRecentAssignments = async () => {
-    // Example: /api/assignments?limit=5
-    setRecentAssignments([
-      { orderId: 'ABC123', partner: 'John Doe', status: 'success' },
-      { orderId: 'XYZ789', partner: 'Jane Smith', status: 'failed' }
-    ]);
+    const response = await fetch("/api/assignments?limit=5&sort=-createdAt");
+    const data = await response.json();
+    setRecentAssignments(data);
   };
 
   return (
-    <>
+    <div className="container">
       <h1>Dashboard</h1>
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <div style={{ background: '#eee', padding: '1rem' }}>
-          <h2>Key Metrics</h2>
-          <p>Total Delivered: {metrics.totalDelivered}</p>
-          <p>Total Pending: {metrics.totalPending}</p>
-          <p>Total Partners: {metrics.totalPartners}</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+        <div className="card" style={{ flex: "1 1 250px" }}>
+          <h2>Partner Availability</h2>
+          <p>Available: {partnerStats.available}</p>
+          <p>Busy: {partnerStats.busy}</p>
+          <p>Offline: {partnerStats.offline}</p>
         </div>
-        <div style={{ background: '#eee', padding: '1rem' }}>
+        <div className="card" style={{ flex: "1 1 250px" }}>
+          <h2>Assignment Metrics</h2>
+          {metrics && (
+            <>
+              <p>Total Assignments: {metrics.totalAssignments}</p>
+              <p>Success Rate: {metrics.successRate.toFixed(1)}%</p>
+            </>
+          )}
+        </div>
+        <div className="card" style={{ flex: "1 1 250px" }}>
           <h2>Recent Assignments</h2>
-          <ul>
+          <ul style={{ listStyle: "none", padding: 0 }}>
             {recentAssignments.map((a, idx) => (
-              <li key={idx}>
-                Order: {a.orderId}, Partner: {a.partner}, Status: {a.status}
+              <li key={idx} style={{ marginBottom: "0.5rem" }}>
+                Order: {a.orderId}, Partner: {a.partnerId}, Status: {a.status}
               </li>
             ))}
           </ul>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
